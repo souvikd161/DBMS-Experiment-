@@ -1,0 +1,289 @@
+/*
+===========================================================
+COLLEGE DBMS LABORATORY - EXPERIMENT 2
+===========================================================
+
+===========================================================
+1. CREATE DATABASE
+===========================================================
+*/
+
+CREATE DATABASE IF NOT EXISTS indian_ecommerce;
+USE indian_ecommerce;
+
+
+/*
+===========================================================
+2. RELATIONAL SCHEMA / TABLE CREATION
+===========================================================
+*/
+
+-- CUSTOMER
+CREATE TABLE CUSTOMER (
+    CustomerID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Phone VARCHAR(15),
+    Password VARCHAR(255) NOT NULL,
+    Address VARCHAR(255),
+    DateOfJoin DATE NOT NULL
+);
+
+-- CATEGORY
+CREATE TABLE CATEGORY (
+    CategoryID INT PRIMARY KEY,
+    CategoryName VARCHAR(100) NOT NULL,
+    Description VARCHAR(255)
+);
+
+
+-- SELLER
+CREATE TABLE SELLER (
+    SellerID INT PRIMARY KEY,
+    SellerName VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Phone VARCHAR(15),
+    Address VARCHAR(255),
+    GSTIN VARCHAR(20) NOT NULL UNIQUE
+);
+
+
+-- PRODUCT
+CREATE TABLE PRODUCT (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(150) NOT NULL,
+    Description VARCHAR(255),
+    Price DECIMAL(10,2) NOT NULL,
+    Stock INT NOT NULL,
+    CategoryID INT NOT NULL,
+    SellerID INT NOT NULL,
+
+    FOREIGN KEY (CategoryID)
+        REFERENCES CATEGORY(CategoryID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (SellerID)
+        REFERENCES SELLER(SellerID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- ELECTRONICS (Product specialization)
+CREATE TABLE ELECTRONICS (
+    ProductID INT PRIMARY KEY,
+    Brand VARCHAR(100) NOT NULL,
+    Warranty VARCHAR(50),
+
+    FOREIGN KEY (ProductID)
+        REFERENCES PRODUCT(ProductID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+-- CLOTHING (Product specialization)
+CREATE TABLE CLOTHING (
+    ProductID INT PRIMARY KEY,
+    Size VARCHAR(20) NOT NULL,
+    Material VARCHAR(100),
+
+    FOREIGN KEY (ProductID)
+        REFERENCES PRODUCT(ProductID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+-- BOOK (Product specialization)
+CREATE TABLE BOOK (
+    ProductID INT PRIMARY KEY,
+    ISBN VARCHAR(20) NOT NULL UNIQUE,
+    Author VARCHAR(100) NOT NULL,
+
+    FOREIGN KEY (ProductID)
+        REFERENCES PRODUCT(ProductID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- ORDERS
+-- ORDER is a reserved keyword in SQL, so ORDERS is used.
+CREATE TABLE ORDERS (
+    OrderID INT PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    OrderDate DATE NOT NULL,
+    TotalAmount DECIMAL(10,2) NOT NULL,
+    Status VARCHAR(30) NOT NULL,
+
+    FOREIGN KEY (CustomerID)
+        REFERENCES CUSTOMER(CustomerID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+-- ORDER_ITEM
+CREATE TABLE ORDER_ITEM (
+    OrderItemID INT PRIMARY KEY,
+    OrderID INT NOT NULL,
+    ProductID INT NOT NULL,
+    Quantity INT NOT NULL,
+    Price DECIMAL(10,2) NOT NULL,
+    Discount DECIMAL(10,2) DEFAULT 0,
+
+    FOREIGN KEY (OrderID)
+        REFERENCES ORDERS(OrderID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (ProductID)
+        REFERENCES PRODUCT(ProductID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- PAYMENT
+
+
+-- DELIVERY
+-- UNIQUE OrderID enforces one delivery per order.
+CREATE TABLE DELIVERY (
+    DeliveryID INT PRIMARY KEY,
+    OrderID INT NOT NULL UNIQUE,
+    DeliveryDate DATE,
+    Status VARCHAR(30) NOT NULL,
+    Address VARCHAR(255) NOT NULL,
+    TrackingID VARCHAR(50) NOT NULL UNIQUE,
+
+    FOREIGN KEY (OrderID)
+        REFERENCES ORDERS(OrderID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+/*
+===========================================================
+3. INSERT SAMPLE DATA
+===========================================================
+*/
+
+-- CUSTOMER
+INSERT INTO CUSTOMER
+(CustomerID, Name, Email, Phone, Password, Address, DateOfJoin)
+VALUES
+(1, 'Rahul Sharma', 'rahul@gmail.com', '9876543210',
+ 'rahul123', 'Delhi', '2026-01-10'),
+(2, 'Priya Singh', 'priya@gmail.com', '9876543211',
+ 'priya123', 'Mumbai', '2026-01-15'),
+(3, 'Amit Kumar', 'amit@gmail.com', '9876543212',
+ 'amit123', 'Kolkata', '2026-02-01');
+
+
+-- CATEGORY
+INSERT INTO CATEGORY
+(CategoryID, CategoryName, Description)
+VALUES
+(1, 'Electronics', 'Electronic devices and accessories'),
+(2, 'Clothing', 'Men and women clothing'),
+(3, 'Books', 'Books and educational materials');
+
+
+-- SELLER
+INSERT INTO SELLER
+(SellerID, SellerName, Email, Phone, Address, GSTIN)
+VALUES
+(101, 'Tech World', 'tech@gmail.com', '9123456780',
+ 'Delhi', 'GSTIN123456'),
+(102, 'Fashion Hub', 'fashion@gmail.com', '9123456781',
+ 'Mumbai', 'GSTIN123457'),
+(103, 'Book Store', 'book@gmail.com', '9123456782',
+ 'Kolkata', 'GSTIN123458');
+
+-- PRODUCT
+INSERT INTO PRODUCT
+(ProductID, ProductName, Description, Price, Stock, CategoryID, SellerID)
+VALUES
+(1001, 'Laptop', 'Gaming laptop', 75000.00, 10, 1, 101),
+(1002, 'T-Shirt', 'Cotton T-Shirt', 999.00, 50, 2, 102),
+(1003, 'DBMS Book', 'Database Management System Book',
+ 599.00, 20, 3, 103);
+
+
+-- ELECTRONICS
+INSERT INTO ELECTRONICS
+(ProductID, Brand, Warranty)
+VALUES
+(1001, 'Dell', '2 Years');
+
+
+-- CLOTHING
+INSERT INTO CLOTHING
+(ProductID, Size, Material)
+VALUES
+(1002, 'L', 'Cotton');
+
+
+-- BOOK
+INSERT INTO BOOK
+(ProductID, ISBN, Author)
+VALUES
+(1003, '9781234567890', 'Korth');
+
+-- ORDERS
+INSERT INTO ORDERS
+(OrderID, CustomerID, OrderDate, TotalAmount, Status)
+VALUES
+(5001, 1, '2026-09-01', 75000.00, 'Confirmed'),
+(5002, 2, '2026-09-02', 999.00, 'Shipped');
+
+
+-- ORDER_ITEM
+INSERT INTO ORDER_ITEM
+(OrderItemID, OrderID, ProductID, Quantity, Price, Discount)
+VALUES
+(6001, 5001, 1001, 1, 75000.00, 0),
+(6002, 5002, 1002, 1, 999.00, 50);
+
+
+-- PAYMENT
+INSERT INTO PAYMENT
+(PaymentID, OrderID, PaymentMethod, Amount, PaymentDate)
+VALUES
+(7001, 5001, 'UPI', 75000.00, '2026-09-01'),
+(7002, 5002, 'Credit Card', 949.00, '2026-09-02');
+
+-- DELIVERY
+INSERT INTO DELIVERY
+(DeliveryID, OrderID, DeliveryDate, Status, Address, TrackingID)
+VALUES
+(8001, 5001, '2026-09-05', 'Delivered',
+ 'Delhi', 'TRK10001'),
+(8002, 5002, '2026-09-06', 'In Transit',
+ 'Mumbai', 'TRK10002');
+
+
+/*
+===========================================================
+4. DISPLAY THE INSERTED DATA
+===========================================================
+*/
+
+SELECT * FROM CUSTOMER;
+SELECT * FROM CATEGORY;
+SELECT * FROM SELLER;
+SELECT * FROM PRODUCT;
+SELECT * FROM ELECTRONICS;
+SELECT * FROM CLOTHING;
+SELECT * FROM BOOK;
+SELECT * FROM ORDERS;
+SELECT * FROM ORDER_ITEM;
+SELECT * FROM PAYMENT;
+SELECT * FROM DELIVERY;
+
+
+
+
+
+
